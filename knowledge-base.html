@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Картотека</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFE9DA;
+    --paper-card:#FBF8F0;
+    --ink:#1F2A44;
+    --ink-soft:#5B6478;
+    --brass:#A8823F;
+    --stamp:#8B3A3A;
+    --line:#D8CFB8;
+    --line-soft:#E6E0CE;
+    --shadow: 0 1px 0 rgba(31,42,68,0.06), 0 8px 20px -12px rgba(31,42,68,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(168,130,63,0.07), transparent 40%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  .app{
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar: drawers ---------- */
+  .drawers{
+    width:230px;
+    flex-shrink:0;
+    background:linear-gradient(180deg, #24304F, #1B2440);
+    color:#EFE9DA;
+    padding:28px 0 20px;
+    display:flex;
+    flex-direction:column;
+  }
+  .drawers-title{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    font-weight:600;
+    padding:0 22px 4px;
+    letter-spacing:0.01em;
+  }
+  .drawers-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#9AA4C0;
+    padding:0 22px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    margin-bottom:10px;
+  }
+  .drawer-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    overflow-y:auto;
+  }
+  .drawer-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:10px 22px;
+    cursor:pointer;
+    font-size:14px;
+    color:#D6DAEA;
+    border-left:3px solid transparent;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .drawer-item:hover{ background:rgba(255,255,255,0.05); }
+  .drawer-item.active{
+    background:rgba(168,130,63,0.18);
+    border-left-color:var(--brass);
+    color:#fff;
+    font-weight:500;
+  }
+  .drawer-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#9AA4C0;
+    background:rgba(255,255,255,0.06);
+    padding:1px 7px;
+    border-radius:10px;
+  }
+  .drawer-item.active .drawer-count{ color:#2A2210; background:var(--brass); }
+
+  .new-drawer-btn{
+    margin:16px 18px 0;
+    padding:9px 10px;
+    background:transparent;
+    border:1px dashed rgba(255,255,255,0.25);
+    color:#C7CEE3;
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .new-drawer-btn:hover{ border-color:var(--brass); color:#fff; }
+
+  .sidebar-footer{
+    margin-top:auto;
+    padding:14px 22px 0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:#6E78A0;
+    border-top:1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ---------- Main ---------- */
+  .main{
+    flex:1;
+    padding:34px 40px 60px;
+    max-width:1100px;
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .search-wrap{
+    position:relative;
+    flex:1;
+    min-width:220px;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:11px 14px 11px 36px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--paper-card);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .search-wrap input:focus{ outline:2px solid var(--brass); outline-offset:1px; }
+  .search-icon{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:14px;
+  }
+  .btn-primary{
+    background:var(--ink);
+    color:#F6F1E4;
+    border:none;
+    padding:11px 18px;
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-primary:hover{ background:#2C3A5E; }
+  .btn-primary:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--brass); outline-offset:2px;
+  }
+
+  .list-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .list-header h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:26px;
+    margin:0;
+  }
+  .list-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  /* card grid */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:3px 3px 8px 8px;
+    box-shadow:var(--shadow);
+    padding:16px 16px 14px;
+    cursor:pointer;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    min-height:150px;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .card::before{
+    content:"";
+    position:absolute; top:0; left:16px; right:16px; height:3px;
+    background:var(--stamp);
+    opacity:0.75;
+    border-radius:0 0 2px 2px;
+  }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 4px 0 rgba(31,42,68,0.06), 0 14px 26px -14px rgba(31,42,68,0.35); }
+  .card-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--brass);
+    letter-spacing:0.04em;
+    margin-bottom:8px;
+  }
+  .card-title{
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 8px;
+    line-height:1.3;
+  }
+  .card-snippet{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    flex:1;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+  }
+  .card-tags{
+    margin-top:10px;
+    display:flex; flex-wrap:wrap; gap:6px;
+  }
+  .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    background:var(--line-soft);
+    padding:2px 7px;
+    border-radius:10px;
+  }
+
+  .empty-state{
+    border:1px dashed var(--line);
+    border-radius:10px;
+    padding:50px 30px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .empty-state h2{
+    font-family:'Fraunces', serif;
+    color:var(--ink);
+    font-size:20px;
+    margin:0 0 8px;
+  }
+
+  /* ---------- Detail / editor overlay ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(31,42,68,0.45);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 20px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .overlay.open{ display:flex; }
+  .sheet{
+    background:var(--paper-card);
+    width:100%; max-width:680px;
+    border-radius:6px 6px 12px 12px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.4);
+    position:relative;
+    padding:30px 34px 28px;
+  }
+  .sheet::before{
+    content:"";
+    position:absolute; top:0; left:34px; right:34px; height:4px;
+    background:var(--stamp);
+    border-radius:0 0 2px 2px;
+  }
+  .sheet-top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+    margin-bottom:18px;
+  }
+  .sheet-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--brass);
+  }
+  .close-btn{
+    background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-soft);
+    line-height:1; padding:4px;
+  }
+  .close-btn:hover{ color:var(--ink); }
+
+  .field-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+    display:block;
+  }
+  .field{ margin-bottom:16px; }
+  .field input[type=text], .field textarea, .field select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px 12px;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    background:#fff;
+  }
+  .field textarea{ min-height:180px; resize:vertical; line-height:1.6; font-family:'Inter',sans-serif; }
+  .view-title{
+    font-family:'Fraunces', serif;
+    font-size:24px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .view-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:16px;
+  }
+  .view-content{
+    font-size:15px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    margin-bottom:18px;
+  }
+  .sheet-actions{
+    display:flex; gap:10px; justify-content:flex-end; margin-top:8px;
+    border-top:1px solid var(--line-soft);
+    padding-top:16px;
+  }
+  .btn-secondary{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:9px 16px;
+    border-radius:7px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+  .btn-secondary:hover{ background:var(--line-soft); }
+  .btn-danger{
+    background:transparent;
+    border:1px solid var(--stamp);
+    color:var(--stamp);
+    padding:9px 16px;
+    border-radius:7px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    cursor:pointer;
+    margin-right:auto;
+  }
+  .btn-danger:hover{ background:rgba(139,58,58,0.08); }
+
+  .status-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+  }
+
+  @media (max-width:720px){
+    .app{ flex-direction:column; }
+    .drawers{ width:100%; padding:16px 0; flex-direction:row; overflow-x:auto; }
+    .drawers-title, .drawers-sub, .sidebar-footer{ display:none; }
+    .drawer-list{ display:flex; flex-direction:row; gap:4px; padding:0 12px; }
+    .drawer-item{ border-left:none; border-bottom:3px solid transparent; white-space:nowrap; }
+    .drawer-item.active{ border-bottom-color:var(--brass); }
+    .new-drawer-btn{ display:none; }
+    .main{ padding:24px 18px 50px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav class="drawers">
+    <div class="drawers-title">Картотека</div>
+    <div class="drawers-sub" id="storageNote">хранится в вашем аккаунте</div>
+    <ul class="drawer-list" id="drawerList"></ul>
+    <button class="new-drawer-btn" id="newCategoryBtn" type="button">+ новый раздел</button>
+    <div class="sidebar-footer">Личная база знаний</div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="Искать по заголовку, тексту, тегам…">
+      </div>
+      <button class="btn-primary" id="addBtn" type="button">+ Новая карточка</button>
+    </div>
+
+    <div class="list-header">
+      <h1 id="listTitle">Все карточки</h1>
+      <span class="list-count" id="listCount"></span>
+    </div>
+
+    <div id="listArea"></div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+(function(){
+  const els = {
+    drawerList: document.getElementById('drawerList'),
+    listArea: document.getElementById('listArea'),
+    listTitle: document.getElementById('listTitle'),
+    listCount: document.getElementById('listCount'),
+    searchInput: document.getElementById('searchInput'),
+    addBtn: document.getElementById('addBtn'),
+    newCategoryBtn: document.getElementById('newCategoryBtn'),
+    overlay: document.getElementById('overlay'),
+    sheet: document.getElementById('sheet'),
+    storageNote: document.getElementById('storageNote'),
+  };
+
+  let articles = [];
+  let activeCategory = 'Все';
+  let searchTerm = '';
+  let storageOK = true;
+  const STORAGE_KEY = 'kb:articles';
+
+  const seed = [
+    {
+      id: cryptoId(), no: 1,
+      title: 'Как пользоваться картотекой',
+      category: 'Инструкция',
+      tags: ['гайд','старт'],
+      content: 'Слева — разделы (drawers), справа — карточки внутри выбранного раздела.\n\nЧтобы добавить запись — нажмите «Новая карточка». Чтобы отредактировать или удалить — откройте карточку и нажмите «Изменить» или «Удалить».\n\nПоиск наверху ищет по заголовку, тексту и тегам сразу по всем разделам.',
+      createdAt: Date.now(), updatedAt: Date.now()
+    },
+    {
+      id: cryptoId(), no: 2,
+      title: 'Пример записи',
+      category: 'Инструкция',
+      tags: ['пример'],
+      content: 'Это черновая карточка для примера — можно смело отредактировать её под свою тему или удалить.',
+      createdAt: Date.now(), updatedAt: Date.now()
+    }
+  ];
+
+  function cryptoId(){
+    return 'a' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+  }
+
+  async function loadArticles(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if(res && res.value){
+        articles = JSON.parse(res.value);
+      } else {
+        articles = seed;
+        await saveArticles();
+      }
+    }catch(e){
+      // key doesn't exist yet, or storage unavailable
+      try{
+        articles = seed;
+        await saveArticles();
+      }catch(e2){
+        storageOK = false;
+        articles = seed;
+        els.storageNote.textContent = 'хранится только в этой вкладке';
+      }
+    }
+    render();
+  }
+
+  async function saveArticles(){
+    try{
+      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(articles), false);
+      if(!result){ storageOK = false; els.storageNote.textContent = 'хранится только в этой вкладке'; }
+    }catch(e){
+      storageOK = false;
+      els.storageNote.textContent = 'хранится только в этой вкладке';
+    }
+  }
+
+  function getCategories(){
+    const map = {};
+    articles.forEach(a => { map[a.category] = (map[a.category]||0) + 1; });
+    return Object.keys(map).sort((a,b)=>a.localeCompare(b,'ru')).map(name => ({name, count: map[name]}));
+  }
+
+  function nextNo(){
+    return articles.reduce((m,a)=>Math.max(m, a.no||0), 0) + 1;
+  }
+
+  function renderDrawers(){
+    const cats = getCategories();
+    els.drawerList.innerHTML = '';
+
+    const allItem = document.createElement('li');
+    allItem.className = 'drawer-item' + (activeCategory==='Все' ? ' active' : '');
+    allItem.innerHTML = `<span>Все карточки</span><span class="drawer-count">${articles.length}</span>`;
+    allItem.onclick = () => { activeCategory = 'Все'; render(); };
+    els.drawerList.appendChild(allItem);
+
+    cats.forEach(c => {
+      const li = document.createElement('li');
+      li.className = 'drawer-item' + (activeCategory===c.name ? ' active' : '');
+      li.innerHTML = `<span>${escapeHtml(c.name)}</span><span class="drawer-count">${c.count}</span>`;
+      li.onclick = () => { activeCategory = c.name; render(); };
+      els.drawerList.appendChild(li);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function filteredArticles(){
+    let list = articles;
+    if(activeCategory !== 'Все') list = list.filter(a => a.category === activeCategory);
+    if(searchTerm.trim()){
+      const t = searchTerm.trim().toLowerCase();
+      list = list.filter(a =>
+        a.title.toLowerCase().includes(t) ||
+        a.content.toLowerCase().includes(t) ||
+        (a.tags||[]).some(tag => tag.toLowerCase().includes(t))
+      );
+    }
+    return list.slice().sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
+  }
+
+  function renderList(){
+    const list = filteredArticles();
+    els.listTitle.textContent = activeCategory === 'Все' ? 'Все карточки' : activeCategory;
+    els.listCount.textContent = list.length + (list.length===1 ? ' карточка' : ' карточек');
+
+    if(list.length === 0){
+      els.listArea.innerHTML = '';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = `<h2>Пока пусто</h2><p>${searchTerm ? 'Ничего не найдено по запросу «'+escapeHtml(searchTerm)+'».' : 'В этом разделе ещё нет карточек.'}</p>`;
+      els.listArea.appendChild(empty);
+      return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    list.forEach(a => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.tabIndex = 0;
+      card.innerHTML = `
+        <div class="card-no">№ ${String(a.no).padStart(3,'0')} · ${escapeHtml(a.category)}</div>
+        <h3 class="card-title">${escapeHtml(a.title)}</h3>
+        <div class="card-snippet">${escapeHtml(a.content)}</div>
+        <div class="card-tags">${(a.tags||[]).map(t=>`<span class="tag">#${escapeHtml(t)}</span>`).join('')}</div>
+      `;
+      card.onclick = () => openView(a.id);
+      card.onkeydown = (e) => { if(e.key==='Enter') openView(a.id); };
+      grid.appendChild(card);
+    });
+    els.listArea.innerHTML = '';
+    els.listArea.appendChild(grid);
+  }
+
+  function render(){
+    renderDrawers();
+    renderList();
+  }
+
+  function openOverlay(html){
+    els.sheet.innerHTML = html;
+    els.overlay.classList.add('open');
+  }
+  function closeOverlay(){
+    els.overlay.classList.remove('open');
+    els.sheet.innerHTML = '';
+  }
+  els.overlay.addEventListener('click', (e) => { if(e.target === els.overlay) closeOverlay(); });
+  document.addEventListener('keydown', (e) => { if(e.key==='Escape') closeOverlay(); });
+
+  function openView(id){
+    const a = articles.find(x => x.id === id);
+    if(!a) return;
+    const updated = new Date(a.updatedAt).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+    openOverlay(`
+      <div class="sheet-top">
+        <div class="sheet-no">Карточка № ${String(a.no).padStart(3,'0')} · ${escapeHtml(a.category)}</div>
+        <button class="close-btn" id="closeBtn" aria-label="Закрыть">✕</button>
+      </div>
+      <h2 class="view-title">${escapeHtml(a.title)}</h2>
+      <div class="view-meta">Обновлено ${updated}${(a.tags&&a.tags.length) ? ' · ' + a.tags.map(t=>'#'+escapeHtml(t)).join(' ') : ''}</div>
+      <div class="view-content">${escapeHtml(a.content)}</div>
+      <div class="sheet-actions">
+        <button class="btn-danger" id="deleteBtn" type="button">Удалить</button>
+        <button class="btn-secondary" id="cancelBtn" type="button">Закрыть</button>
+        <button class="btn-primary" id="editBtn" type="button">Изменить</button>
+      </div>
+    `);
+    document.getElementById('closeBtn').onclick = closeOverlay;
+    document.getElementById('cancelBtn').onclick = closeOverlay;
+    document.getElementById('editBtn').onclick = () => openEdit(a.id);
+    document.getElementById('deleteBtn').onclick = () => deleteArticle(a.id);
+  }
+
+  function openEdit(id){
+    const isNew = !id;
+    const a = isNew ? {id:null, no:nextNo(), title:'', category: activeCategory!=='Все' ? activeCategory : '', tags:[], content:''} : articles.find(x=>x.id===id);
+    if(!a) return;
+    openOverlay(`
+      <div class="sheet-top">
+        <div class="sheet-no">${isNew ? 'Новая карточка · № ' + String(a.no).padStart(3,'0') : 'Редактирование · № ' + String(a.no).padStart(3,'0')}</div>
+        <button class="close-btn" id="closeBtn" aria-label="Закрыть">✕</button>
+      </div>
+      <div class="field">
+        <label class="field-label" for="fTitle">Заголовок</label>
+        <input type="text" id="fTitle" value="${escapeHtml(a.title)}" placeholder="Например: Пароли от VPN">
+      </div>
+      <div class="field">
+        <label class="field-label" for="fCategory">Раздел</label>
+        <input type="text" id="fCategory" list="catList" value="${escapeHtml(a.category)}" placeholder="Например: Работа">
+        <datalist id="catList">${getCategories().map(c=>`<option value="${escapeHtml(c.name)}">`).join('')}</datalist>
+      </div>
+      <div class="field">
+        <label class="field-label" for="fTags">Теги (через запятую)</label>
+        <input type="text" id="fTags" value="${escapeHtml((a.tags||[]).join(', '))}" placeholder="Например: важное, доступ">
+      </div>
+      <div class="field">
+        <label class="field-label" for="fContent">Текст</label>
+        <textarea id="fContent" placeholder="Содержимое карточки…">${escapeHtml(a.content)}</textarea>
+      </div>
+      <div class="sheet-actions">
+        ${isNew ? '' : '<button class="btn-danger" id="deleteBtn" type="button">Удалить</button>'}
+        <button class="btn-secondary" id="cancelBtn" type="button">Отмена</button>
+        <button class="btn-primary" id="saveBtn" type="button">Сохранить</button>
+      </div>
+    `);
+    document.getElementById('closeBtn').onclick = closeOverlay;
+    document.getElementById('cancelBtn').onclick = closeOverlay;
+    if(!isNew) document.getElementById('deleteBtn').onclick = () => deleteArticle(a.id);
+    document.getElementById('saveBtn').onclick = async () => {
+      const title = document.getElementById('fTitle').value.trim();
+      const category = document.getElementById('fCategory').value.trim() || 'Без раздела';
+      const tags = document.getElementById('fTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+      const content = document.getElementById('fContent').value.trim();
+      if(!title){ document.getElementById('fTitle').focus(); return; }
+
+      if(isNew){
+        articles.push({
+          id: cryptoId(), no: nextNo(), title, category, tags, content,
+          createdAt: Date.now(), updatedAt: Date.now()
+        });
+      } else {
+        const idx = articles.findIndex(x=>x.id===a.id);
+        articles[idx] = {...articles[idx], title, category, tags, content, updatedAt: Date.now()};
+      }
+      await saveArticles();
+      activeCategory = category;
+      closeOverlay();
+      render();
+    };
+  }
+
+  async function deleteArticle(id){
+    const a = articles.find(x=>x.id===id);
+    if(!a) return;
+    if(!confirm(`Удалить карточку «${a.title}»? Это действие нельзя отменить.`)) return;
+    articles = articles.filter(x=>x.id!==id);
+    await saveArticles();
+    closeOverlay();
+    render();
+  }
+
+  els.addBtn.onclick = () => openEdit(null);
+  els.newCategoryBtn.onclick = () => {
+    const name = prompt('Название нового раздела:');
+    if(name && name.trim()){ activeCategory = name.trim(); render(); }
+  };
+  els.searchInput.oninput = (e) => { searchTerm = e.target.value; render(); };
+
+  loadArticles();
+})();
+</script>
+</body>
+</html>
